@@ -3,6 +3,7 @@ server:
 spring:
   profiles:
     active: dev
+    include: feign
   application:
     name: service-order
   cloud:
@@ -13,6 +14,10 @@ spring:
           enabled: false
         namespace: ${spring.profiles.active:dev}
 
+
+logging:
+  level:
+    com.luliwind.order.feign: debug
 
 ---
 spring:

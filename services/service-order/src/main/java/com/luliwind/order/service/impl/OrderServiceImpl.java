@@ -1,6 +1,7 @@
 package com.luliwind.order.service.impl;
 
 import com.luliwind.order.bean.Order;
+import com.luliwind.order.feign.ProductFeignClient;
 import com.luliwind.order.service.OrderService;
 import com.luliwind.product.bean.Product;
 import org.slf4j.Logger;
@@ -26,10 +27,15 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     LoadBalancerClient loadBalancerClient;
 
+    @Autowired
+    ProductFeignClient productFeignClient;
+
 
     @Override
     public Order createOrder(Long productId, Long userId) {
-        Product product = getProductFromRemoteWithLoadBalanceAnnotation(productId);
+        //Product product = getProductFromRemoteWithLoadBalanceAnnotation(productId);
+        //使用feign实现远程调用
+        Product product = productFeignClient.getProductById(productId);
         Order order = new Order();
         order.setUserId(userId);
         order.setId(1L);
