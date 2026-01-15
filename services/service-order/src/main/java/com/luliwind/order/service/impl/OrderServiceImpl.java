@@ -1,5 +1,7 @@
 package com.luliwind.order.service.impl;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.luliwind.order.bean.Order;
 import com.luliwind.order.feign.ProductFeignClient;
 import com.luliwind.order.service.OrderService;
@@ -31,6 +33,7 @@ public class OrderServiceImpl implements OrderService {
     ProductFeignClient productFeignClient;
 
 
+    @SentinelResource(value="createOrder",blockHandler = "createOrderFallback")
     @Override
     public Order createOrder(Long productId, Long userId) {
         //Product product = getProductFromRemoteWithLoadBalanceAnnotation(productId);
@@ -48,7 +51,29 @@ public class OrderServiceImpl implements OrderService {
         return order;
     }
 
-    //一、
+    /**
+     * sentinel 兜底回调
+     * @param productId
+     * @param userId
+     * @param exception
+     * @return
+     */
+    public Order createOrderFallback(Long productId, Long userId, BlockException exception) {
+        log.error("createOrder fallbackHandler, productId: {}, userId: {}", productId, userId, exception);
+        return new Order(){{
+            setId(0L);
+            setTotalAmount(BigDecimal.ZERO);
+            setNickName("未知用户");
+            setAddress("异常信息：" + exception.getClass());
+        }};
+    }
+
+
+    /**
+     *
+     * @param productId
+     * @return
+     */
     private Product getProductFromRemote(Long productId){
         //1.获取商品服务所在的所有Ip+port
         List<ServiceInstance> instances = discoveryClient.getInstances("service-product");
@@ -61,7 +86,12 @@ public class OrderServiceImpl implements OrderService {
         return forObject;
     }
 
-    //二、负载均衡
+
+    /**
+     * 二、负载均衡
+     * @param productId
+     * @return
+     */
     private Product getProductFromRemoteWithLoadBalance(Long productId){
         //1.获取商品服务所在的所有Ip+port
         ServiceInstance instance = loadBalancerClient.choose("service-product");
@@ -73,7 +103,13 @@ public class OrderServiceImpl implements OrderService {
         return forObject;
     }
 
-    //三、基于注解的负载均衡
+
+
+    /**
+     * 三、基于注解的负载均衡
+     * @param productId
+     * @return
+     */
     private Product getProductFromRemoteWithLoadBalanceAnnotation(Long productId){
         //url会被动态替换
         String url ="http://service-product/product/" + productId;
