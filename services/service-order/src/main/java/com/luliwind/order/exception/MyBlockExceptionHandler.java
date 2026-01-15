@@ -19,6 +19,7 @@ public class MyBlockExceptionHandler implements BlockExceptionHandler {
                        String s, BlockException e) throws Exception {
 
         PrintWriter writer = httpServletResponse.getWriter();
+        httpServletResponse.setStatus(429);//too many requests
         httpServletResponse.setContentType("application/json;charset=utf-8");
         R error = R.error(500, s + "被Sentinel限制了，原因：" + e.getClass().getName());
         String json = objectMapper.writeValueAsString(error);
