@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+//@RequestMapping("/api/order")
 @Slf4j
 //@RefreshScope //自动刷新配置属性
 @RestController
